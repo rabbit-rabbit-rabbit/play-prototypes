@@ -1,7 +1,7 @@
-import chalk from "chalk"
-import { createState, S } from "@state-designer/react"
-import * as Static from "./static"
-import * as Types from "./types"
+import chalk from "chalk";
+import { createState, S } from "@state-designer/react";
+import * as Static from "./static";
+import * as Types from "./types";
 
 const state = createState({
   id: "global",
@@ -154,7 +154,7 @@ const state = createState({
                     CLOSED_MODAL: { to: ["noModal", "publishIdle"] },
                     SELECTED_USER: {
                       get: "selectedTest",
-                      do: "addUserToDraft",
+                      do: "addUserToTest",
                       to: ["noModal", "publishIdle"],
                     },
                   },
@@ -179,8 +179,40 @@ const state = createState({
           },
         },
         inProgressTest: {
-          on: {
-            CLOSED_PANEL: { do: "clearSelectedTest", to: "tests" },
+          initial: "inProgressIdle",
+          states: {
+            inProgressIdle: {
+              on: {
+                CLOSED_PANEL: { do: "clearSelectedTest", to: "tests" },
+                STARTED_SEARCHING_FOR_USERS: {
+                  to: ["inProgressTest.findingUsers", "findingUsersModal"],
+                },
+                OPENED_USER_DIALOG: {
+                  do: "setSelectedUserId",
+                  to: "inProgressTest.invitedUserDialog",
+                },
+              },
+            },
+            findingUsers: {
+              on: {
+                CLOSED_MODAL: { to: ["noModal", "inProgressIdle"] },
+                SELECTED_USER: {
+                  get: "selectedTest",
+                  do: "addUserToTest",
+                  to: ["noModal", "inProgressIdle"],
+                },
+              },
+            },
+            invitedUserDialog: {
+              on: {
+                CLOSED_DIALOG: { to: "inProgressIdle" },
+                REMOVED_USER: {
+                  get: "selectedTest",
+                  do: ["removeUserFromDraft", "clearSelectedUserId"],
+                  to: "inProgressIdle",
+                },
+              },
+            },
           },
         },
       },
@@ -195,33 +227,33 @@ const state = createState({
   },
   results: {
     selectedTest(data) {
-      return data.tests.find((t) => t.id === data.selectedTestId)
+      return data.tests.find((t) => t.id === data.selectedTestId);
     },
     selectedUser(data) {
-      return data.users.find((t) => t.id === data.selectedUserId)
+      return data.users.find((t) => t.id === data.selectedUserId);
     },
   },
   conditions: {
     selectedTestIsDraft(data, _, selectedTest) {
-      if (selectedTest === undefined) return false
-      return selectedTest.status === "draft"
+      if (selectedTest === undefined) return false;
+      return selectedTest.status === "draft";
     },
     selectedTestIsComplete(data, _, selectedTest) {
-      if (selectedTest === undefined) return false
-      return selectedTest.status === "complete"
+      if (selectedTest === undefined) return false;
+      return selectedTest.status === "complete";
     },
     selectedTestIsInProgress(data, _, selectedTest) {
-      if (selectedTest === undefined) return false
-      return selectedTest.status === "inProgress"
+      if (selectedTest === undefined) return false;
+      return selectedTest.status === "inProgress";
     },
   },
   actions: {
     setSelectedTest(data, payload = {}) {
-      const { test } = payload
-      data.selectedTestId = test.id
+      const { test } = payload;
+      data.selectedTestId = test.id;
     },
     clearSelectedTest(data) {
-      data.selectedTestId = undefined
+      data.selectedTestId = undefined;
     },
     createDraft(data, { name }: { name: string }) {
       const newTest: Types.UserTest = {
@@ -242,83 +274,85 @@ const state = createState({
         },
         survey: [],
         goals: [],
-      }
+      };
 
-      data.tests.push(newTest)
-      data.selectedTestId = newTest.id
+      data.tests.push(newTest);
+      data.selectedTestId = newTest.id;
     },
-    addUserToDraft(
+    addUserToTest(
       data,
       { user }: { user: Types.User },
       selectedTest: Types.UserTest
     ) {
-      if (!selectedTest) return
-      selectedTest.invitedUsers.push(user)
+      if (!selectedTest) return;
+      selectedTest.invitedUsers.push(user);
     },
     duplicateDraft(data, _, selectedTest: Types.UserTest) {
-      if (!selectedTest) return
+      if (!selectedTest) return;
       const newTest: Types.UserTest = {
         ...selectedTest,
         id: "test" + Date.now(),
         name: selectedTest.name + " Copy",
-      }
+      };
 
-      data.tests.push(newTest)
-      data.selectedTestId = newTest.id
+      data.tests.push(newTest);
+      data.selectedTestId = newTest.id;
     },
     deleteDraft(data, _, selectedTest: Types.UserTest) {
-      if (!selectedTest) return
-      const index = data.tests.findIndex((t) => t.id === selectedTest.id)
-      data.selectedTestId = undefined
-      data.tests.splice(index, 1)
+      if (!selectedTest) return;
+      const index = data.tests.findIndex((t) => t.id === selectedTest.id);
+      data.selectedTestId = undefined;
+      data.tests.splice(index, 1);
     },
     completeDraft(data, _, selectedTest: Types.UserTest) {
-      if (!selectedTest) return
-      selectedTest.status = "inProgress"
+      if (!selectedTest) return;
+      selectedTest.status = "inProgress";
     },
     toggleMultipleTries(data, _, selectedTest: Types.UserTest) {
-      if (!selectedTest) return
+      if (!selectedTest) return;
       selectedTest.options.allowMultipleTries = !selectedTest.options
-        .allowMultipleTries
+        .allowMultipleTries;
     },
     toggleTestDataProperty(data, { property }, selectedTest: Types.UserTest) {
-      if (!selectedTest) return
-      selectedTest.options.data[property] = !selectedTest.options.data[property]
+      if (!selectedTest) return;
+      selectedTest.options.data[property] = !selectedTest.options.data[
+        property
+      ];
     },
     setDraftName(data, payload, selectedTest: Types.UserTest) {
-      if (!selectedTest) return
-      const { value = "" } = payload
-      selectedTest.name = value
+      if (!selectedTest) return;
+      const { value = "" } = payload;
+      selectedTest.name = value;
     },
     setTestDuration(data, payload = {}, selectedTest: Types.UserTest) {
-      if (!selectedTest) return
-      const { value } = payload
-      selectedTest.options.testDuration = value * (1000 * 60 * 24)
+      if (!selectedTest) return;
+      const { value } = payload;
+      selectedTest.options.testDuration = value * (1000 * 60 * 24);
     },
     removeUserFromDraft(data, _, selectedTest: Types.UserTest) {
-      if (!selectedTest) return
-      console.log("removing", data.selectedUserId)
+      if (!selectedTest) return;
+      console.log("removing", data.selectedUserId);
       const index = selectedTest.invitedUsers.findIndex(
         (t) => t.id === data.selectedUserId
-      )
-      selectedTest.invitedUsers.splice(index, 1)
+      );
+      selectedTest.invitedUsers.splice(index, 1);
     },
     // Selected User
     setSelectedUserId(data, { user }: { user: Types.User }) {
-      data.selectedUserId = user.id
+      data.selectedUserId = user.id;
     },
     clearSelectedUserId(data) {
-      data.selectedUserId = ""
+      data.selectedUserId = "";
     },
   },
   values: {
     selectedTest(data) {
-      return data.tests.find((t) => t.id === data.selectedTestId)
+      return data.tests.find((t) => t.id === data.selectedTestId);
     },
   },
-})
+});
 
-export default state
+export default state;
 
 // state.onUpdate((update) => {
 // let colWidths = [0]
@@ -385,22 +419,22 @@ export default state
 // })
 
 class Grid {
-  rows = [] as string[][]
+  rows = [] as string[][];
 
   insert(char: string, row: number, col: number, color = false) {
     if (this.rows[row] === undefined) {
-      this.rows[row] = []
+      this.rows[row] = [];
     }
 
     for (let i = 0; i < col; i++) {
-      if (this.rows[row][i] === undefined) this.rows[row][i] = " "
+      if (this.rows[row][i] === undefined) this.rows[row][i] = " ";
     }
-    this.rows[row][col] = color ? char : `\x1b[38;2;144;144;144m${char}\x1b[0m`
+    this.rows[row][col] = color ? char : `\x1b[38;2;144;144;144m${char}\x1b[0m`;
   }
 
   clear(row: number, col: number) {
     if (this.rows[row]) {
-      this.rows[row][col] = ""
+      this.rows[row][col] = "";
     }
   }
 
@@ -409,129 +443,129 @@ class Grid {
       this.rows
         .map((row) => row.map((c) => (c === undefined ? " " : c)).join(""))
         .join("\n")
-    )
+    );
   }
 }
 
-const grid = new Grid()
+const grid = new Grid();
 
 class TNode {
-  name: string
-  active: boolean
-  parent: TNode | undefined
-  children: TNode[]
-  x = 0
-  y = 0
+  name: string;
+  active: boolean;
+  parent: TNode | undefined;
+  children: TNode[];
+  x = 0;
+  y = 0;
 
   constructor(state: S.State<any, any>, parent?: TNode) {
-    this.name = state.name
-    this.active = state.active
-    this.parent = parent
-    this.children = Object.values(state.states).map((s) => new TNode(s, this))
+    this.name = state.name;
+    this.active = state.active;
+    this.parent = parent;
+    this.children = Object.values(state.states).map((s) => new TNode(s, this));
   }
 
   get maxX() {
-    return this.x + this.width
+    return this.x + this.width;
   }
 
   get maxY() {
-    return this.y + this.height
+    return this.y + this.height;
   }
 
   get width() {
-    let cx = this.x + this.name.length + 4
+    let cx = this.x + this.name.length + 4;
     for (let child of this.children) {
-      cx = Math.max(cx, child.maxX)
+      cx = Math.max(cx, child.maxX);
     }
     if (this.children.length > 0) {
-      cx += 1
+      cx += 1;
     }
-    return cx - this.x
+    return cx - this.x;
   }
 
   get height() {
-    let cy = this.y + 3
+    let cy = this.y + 3;
     for (let child of this.children) {
-      cy = Math.max(cy, child.maxY)
+      cy = Math.max(cy, child.maxY);
     }
     if (this.children.length > 0) {
-      cy++
+      cy++;
     }
 
-    return cy - this.y
+    return cy - this.y;
   }
 
   moveTo(x: number, y: number) {
-    this.x = x
-    this.y = y
+    this.x = x;
+    this.y = y;
 
-    let cx = x + 1
-    let cy = y + 2
-    let ch = 0
+    let cx = x + 1;
+    let cy = y + 2;
+    let ch = 0;
 
     for (let i = 0; i < this.children.length; i++) {
-      const child = this.children[i]
+      const child = this.children[i];
       if (cx > x + 50) {
-        cx = x + 1
-        cy = y + 2 + ch
-        ch = 0
+        cx = x + 1;
+        cy = y + 2 + ch;
+        ch = 0;
       }
-      child.moveTo(cx, cy)
-      ch = Math.max(ch, child.height)
-      cx += child.width
+      child.moveTo(cx, cy);
+      ch = Math.max(ch, child.height);
+      cx += child.width;
     }
   }
 
   render() {
-    const { x, y, width: w, height: h } = this
+    const { x, y, width: w, height: h } = this;
     const cs = this.parent
       ? this.active
         ? ["┌", "─", "┒", "┃", "┛", "━", "┕", "│"]
         : ["┌", "─", "┐", "│", "┘", "─", "└", "│"]
-      : ["┌", "╌", "┐", "╎", "┘", "╌", "└", "╎"]
+      : ["┌", "╌", "┐", "╎", "┘", "╌", "└", "╎"];
 
-    const color = this.active
+    const color = this.active;
     for (let i = 0; i < w; i++) {
       for (let j = 0; j < h; j++) {
         if (j === 0) {
           if (i === 0) {
-            grid.insert(cs[0], y + j, x + i, color)
+            grid.insert(cs[0], y + j, x + i, color);
           } else if (i === w - 1) {
-            grid.insert(cs[2], y + j, x + i, color)
+            grid.insert(cs[2], y + j, x + i, color);
           } else {
-            grid.insert(cs[1], y + j, x + i, color)
+            grid.insert(cs[1], y + j, x + i, color);
           }
         } else if (j === 1) {
-          grid.insert(cs[7], y + j, x, color)
-          grid.insert(cs[3], y + j, x + w - 1, color)
+          grid.insert(cs[7], y + j, x, color);
+          grid.insert(cs[3], y + j, x + w - 1, color);
           for (let k = 0; k < this.name.length; k++) {
-            grid.insert(this.name[k], y + j, 2 + x + k, color)
+            grid.insert(this.name[k], y + j, 2 + x + k, color);
           }
         } else if (j === h - 1) {
           if (i === 0) {
-            grid.insert(cs[6], y + j, x + i, color)
+            grid.insert(cs[6], y + j, x + i, color);
           } else if (i === w - 1) {
-            grid.insert(cs[4], y + j, x + i, color)
+            grid.insert(cs[4], y + j, x + i, color);
           } else {
-            grid.insert(cs[5], y + j, x + i, color)
+            grid.insert(cs[5], y + j, x + i, color);
           }
         } else if (j < h - 1) {
-          grid.insert(cs[7], y + j, x, color)
-          grid.insert(cs[3], y + j, x + w - 1, color)
+          grid.insert(cs[7], y + j, x, color);
+          grid.insert(cs[3], y + j, x + w - 1, color);
         }
       }
     }
 
     for (let child of this.children) {
-      child.render()
+      child.render();
     }
   }
 }
 
 state.onUpdate((update) => {
-  const tTree = new TNode(update.stateTree)
-  tTree.moveTo(0, 0)
-  tTree.render()
-  grid.render()
-  console.log("Last Event:", update.log[0])
-})
+  const tTree = new TNode(update.stateTree);
+  tTree.moveTo(0, 0);
+  tTree.render();
+  grid.render();
+  console.log("Last Event:", update.log[0]);
+});

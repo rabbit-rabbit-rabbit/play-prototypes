@@ -1,4 +1,4 @@
-import * as React from "react"
+import * as React from "react";
 import {
   StyleSheet,
   Button,
@@ -8,18 +8,18 @@ import {
   Animated,
   Pressable,
   PressableProps,
-} from "react-native"
-import IconButton, { IconButtonProps } from "../icon-button"
+} from "react-native";
+import IconButton, { IconButtonProps } from "../icon-button";
 
 export type PanelHeaderProps = {
-  title: string
-  leftAction?: PressableProps & { title: string }
-  leftButton?: IconButtonProps
-  leftButton2?: IconButtonProps
-  rightAction?: PressableProps & { title: string }
-  rightButton?: IconButtonProps
-  rightButton2?: IconButtonProps
-}
+  title: string;
+  leftAction?: PressableProps & { title: string };
+  leftButton?: IconButtonProps;
+  leftButton2?: IconButtonProps;
+  rightAction?: PressableProps & { title: string };
+  rightButton?: IconButtonProps;
+  rightButton2?: IconButtonProps;
+};
 
 export default function PanelHeader({
   title = "Title",
@@ -30,35 +30,35 @@ export default function PanelHeader({
   rightButton,
   rightButton2,
 }: PanelHeaderProps) {
-  const fadeAnim = React.useRef(new Animated.Value(0)).current
+  // const fadeAnim = React.useRef(new Animated.Value(0)).current
 
-  const fadeIn = async () => {
-    Animated.sequence([
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 0,
-        useNativeDriver: true,
-      }),
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 210,
-        useNativeDriver: true,
-        delay: 100,
-      }),
-    ]).start()
-  }
+  // const fadeIn = async () => {
+  //   Animated.sequence([
+  //     Animated.timing(fadeAnim, {
+  //       toValue: 0,
+  //       duration: 0,
+  //       useNativeDriver: true,
+  //     }),
+  //     Animated.timing(fadeAnim, {
+  //       toValue: 1,
+  //       duration: 210,
+  //       useNativeDriver: true,
+  //       delay: 100,
+  //     }),
+  //   ]).start()
+  // }
 
-  React.useEffect(() => {
-    fadeIn()
-  }, [title])
+  // React.useEffect(() => {
+  //   fadeIn()
+  // }, [title])
 
   return (
     <Animated.View
       style={[
         styles.PanelHeader,
-        {
-          opacity: fadeAnim, // Bind opacity to animated value
-        },
+        // {
+        //   opacity: fadeAnim, // Bind opacity to animated value
+        // },
       ]}
     >
       <Text style={styles.PanelTitle}>{title}</Text>
@@ -83,7 +83,7 @@ export default function PanelHeader({
         )}
       </View>
     </Animated.View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -117,4 +117,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     color: "#00ff9d",
   },
-})
+});
