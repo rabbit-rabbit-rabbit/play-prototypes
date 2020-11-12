@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react-native",
+		"lib": ["dom", "esnext"],
+		"target": "es6",
+    "moduleResolution": "node",
+    "noEmit": true,
+    "skipLibCheck": true,
+		"resolveJsonModule": true,
+		"baseUrl": "./src",
+		"paths": {
+			"@components/*": ["components/*"],
+			"@hooks/*": ["hooks/*"]
+		}
+  }
+}

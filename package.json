@@ -1,0 +1,40 @@
+{
+  "dependencies": {
+    "@react-native-community/slider": "^3.0.3",
+    "@state-designer/react": "^1.2.31",
+    "@types/rn-swipeable-panel": "^1.2.1",
+    "@types/styled-components": "^5.1.4",
+    "add": "^2.0.6",
+    "babel-plugin-module-resolver": "^4.0.0",
+    "chalk": "^4.1.0",
+    "dripsy": "^1.4.6",
+    "expo": "~39.0.0",
+    "expo-blur": "^8.2.0",
+    "module-resolver": "^1.0.0",
+    "react": "~16.13.0",
+    "react-dom": "~16.13.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-39.0.2.tar.gz",
+    "react-native-dialog": "^6.1.2",
+    "react-native-reanimated": "^1.13.1",
+    "react-native-screens": "~2.10.1",
+    "react-native-web": "0.13.13",
+    "rn-swipeable-panel": "^1.2.3",
+    "styled-components": "^5.2.1",
+    "yarn": "^1.22.10"
+  },
+  "devDependencies": {
+    "@babel/core": "7.9.0",
+    "@types/react": "~16.9.49",
+    "@types/react-dom": "~16.9.8",
+    "@types/react-native": "~0.63.20",
+    "typescript": "~3.8.3"
+  },
+  "scripts": {
+    "start": "expo start --ios -c",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo web",
+    "eject": "expo eject"
+  },
+  "private": true
+}
