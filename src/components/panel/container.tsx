@@ -1,34 +1,47 @@
-import * as React from "react"
-import { StyleSheet, ViewStyle } from "react-native"
-import { SwipeablePanel } from "./core"
+import * as React from "react";
+import { StyleSheet, ViewStyle, View } from "react-native";
+import { SwipeablePanel } from "./core";
 
 export type PanelContainerProps = {
-  isOpen: boolean
-  stayOpen?: boolean
-  onClose?: () => void
-  children?: React.ReactNode
-  style?: ViewStyle
-}
+  isOpen: boolean;
+  zIndex?: number;
+  stayOpen?: boolean;
+  onClose?: () => void;
+  children?: React.ReactNode;
+  style?: ViewStyle;
+};
 
 export default function Container({
   isOpen,
   stayOpen,
   onClose,
   style,
+  zIndex = 1,
   children,
 }: PanelContainerProps) {
   return (
-    <SwipeablePanel
-      isActive={isOpen}
-      stayOpen={stayOpen}
-      onClose={onClose}
-      style={[styles.Panel, style]}
-      barStyle={styles.PanelBar}
-      onlyLarge
+    <View
+      style={{
+        zIndex,
+        position: "absolute",
+        bottom: 0,
+        width: "100%",
+        height: "100%",
+      }}
+      pointerEvents={isOpen ? "auto" : "none"}
     >
-      {children}
-    </SwipeablePanel>
-  )
+      <SwipeablePanel
+        isActive={isOpen}
+        stayOpen={stayOpen}
+        onClose={onClose}
+        style={[styles.Panel, style]}
+        barStyle={styles.PanelBar}
+        onlyLarge
+      >
+        {children}
+      </SwipeablePanel>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -62,4 +75,4 @@ const styles = StyleSheet.create({
     right: 8,
     top: -12,
   },
-})
+});

@@ -1,22 +1,25 @@
-import * as React from "react"
-import { Spacers, Text } from "@components/styled"
-import FakeInput from "@components/fake-input"
-import Input from "@components/input"
-import Button, { Content, ContentLeft, ContentRight } from "@components/button"
-import UserButton from "@components/user-button"
-import SectionTitle from "@components/section-title"
-import Slider from "@components/slider"
-import Switch from "@components/switch"
-import ContinueButton from "@components/continue-button"
-import { ScrollView, StyleSheet } from "react-native"
-import * as Types from "types"
-import useAppState, { send } from "@hooks/useAppState"
-import styles from "./styles"
+import * as React from "react";
+import { Spacers, Text } from "@components/styled";
+import FakeInput from "@components/fake-input";
+import Input from "@components/input";
+import Button, { Content, ContentLeft, ContentRight } from "@components/button";
+import UserButton from "@components/user-button";
+import SectionTitle from "@components/section-title";
+import Slider from "@components/slider";
+import Switch from "@components/switch";
+import ContinueButton from "@components/continue-button";
+import { ScrollView, View } from "react-native";
+import * as Types from "types";
+import { send } from "@hooks/useAppState";
+import styles from "../styles";
 
 export default function PublishPage({ test }: { test: Types.UserTest }) {
   return (
     <React.Fragment>
-      <ScrollView style={styles.Content}>
+      <ScrollView
+        style={styles.Content}
+        contentContainerStyle={styles.ScrollingContent}
+      >
         <Slider
           title="Test Lifespan"
           value={test.options.testDuration}
@@ -54,9 +57,9 @@ export default function PublishPage({ test }: { test: Types.UserTest }) {
           />
         ))}
       </ScrollView>
-      <Spacers.XS />
-      <ContinueButton title="Publish" onPress={() => send("CONTINUED")} />
-      <Spacers.M />
+      <View style={styles.Footer}>
+        <ContinueButton title="Publish" onPress={() => send("CONTINUED")} />
+      </View>
     </React.Fragment>
-  )
+  );
 }

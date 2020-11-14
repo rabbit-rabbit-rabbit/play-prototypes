@@ -1,19 +1,22 @@
-import * as React from "react"
-import { Spacers } from "@components/styled"
-import Input from "@components/input"
-import SectionTitle from "@components/section-title"
-import Switch from "@components/switch"
-import IconButton from "@components/icon-button"
-import ContinueButton from "@components/continue-button"
-import { ScrollView, Text, View } from "react-native"
-import * as Types from "types"
-import useAppState, { send } from "@hooks/useAppState"
-import styles from "./styles"
+import * as React from "react";
+import { Spacers } from "@components/styled";
+import Input from "@components/input";
+import SectionTitle from "@components/section-title";
+import Switch from "@components/switch";
+import IconButton from "@components/icon-button";
+import ContinueButton from "@components/continue-button";
+import { ScrollView, Text, View } from "react-native";
+import * as Types from "types";
+import useAppState, { send } from "@hooks/useAppState";
+import styles from "../styles";
 
 export default function SurveyPage({ test }: { test: Types.UserTest }) {
   return (
     <React.Fragment>
-      <ScrollView style={styles.Content}>
+      <ScrollView
+        style={styles.Content}
+        contentContainerStyle={styles.ScrollingContent}
+      >
         <Text style={styles.Instruction}>
           Add post-test questions for the user to answer. This is not required.
         </Text>
@@ -31,11 +34,12 @@ export default function SurveyPage({ test }: { test: Types.UserTest }) {
           </>
         )}
       </ScrollView>
-      <ContinueButton
-        title={test.survey.length === 0 ? "Skip" : "Next"}
-        onPress={() => send("CONTINUED")}
-      />
-      <Spacers.M />
+      <View style={styles.Footer}>
+        <ContinueButton
+          title={test.survey.length === 0 ? "Skip" : "Next"}
+          onPress={() => send("CONTINUED")}
+        />
+      </View>
     </React.Fragment>
-  )
+  );
 }

@@ -63,8 +63,8 @@ export default function PanelHeader({
     >
       <Text style={styles.PanelTitle}>{title}</Text>
       {leftAction && (
-        <Pressable style={styles.Action} onPress={leftAction.onPress}>
-          <Text style={styles.Action}>{leftAction.title}</Text>
+        <Pressable style={styles.SecondaryAction} onPress={leftAction.onPress}>
+          <Text style={styles.SecondaryAction}>{leftAction.title}</Text>
         </Pressable>
       )}
       <View style={styles.Left}>
@@ -111,6 +111,11 @@ const styles = StyleSheet.create({
   },
   Icon: {
     top: -12,
+  },
+  SecondaryAction: {
+    fontSize: 16,
+    paddingHorizontal: 8,
+    color: "rgba(255, 255, 255, .5)",
   },
   Action: {
     fontSize: 16,

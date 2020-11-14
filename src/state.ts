@@ -96,10 +96,15 @@ const state = createState({
                   on: {
                     CONTINUED: { to: "survey" },
                     BACKED: { to: "newDraft" },
-                    CREATED_GOAL: { to: "creatingGoal" },
+                    STARTED_CREATING_GOAL: { to: "creatingGoal" },
                   },
                 },
-                creatingGoal: {},
+                creatingGoal: {
+                  on: {
+                    CLOSED_GOALS: { to: "goalsList" },
+                    CREATED_GOAL: { to: "goalsList" },
+                  },
+                },
               },
             },
             survey: {
@@ -130,7 +135,7 @@ const state = createState({
                     },
                     BACKED: { to: "survey" },
                     STARTED_SEARCHING_FOR_USERS: {
-                      to: ["findingUsers", "findingUsersModal"],
+                      to: ["publish.findingUsers", "findingUsersModal"],
                     },
                     OPENED_USER_DIALOG: {
                       do: "setSelectedUserId",
@@ -418,10 +423,18 @@ export default state;
 // )
 // })
 
+type NodeType = "leaf" | "branch" | "root";
+
 class Grid {
   rows = [] as string[][];
 
-  insert(char: string, row: number, col: number, color = false) {
+  chars = {
+    active: ["┌", "─", "┒", "┃", "┛", "━", "┕", "│"],
+    inactive: ["┌", "─", "┐", "│", "┘", "─", "└", "│"],
+    root: ["┌", "╌", "┐", "╎", "┘", "╌", "└", "╎"],
+  };
+
+  insert(char: string, col: number, row: number, color = false) {
     if (this.rows[row] === undefined) {
       this.rows[row] = [];
     }
@@ -432,6 +445,49 @@ class Grid {
     this.rows[row][col] = color ? char : `\x1b[38;2;144;144;144m${char}\x1b[0m`;
   }
 
+  drawRect(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    style: "active" | "inactive" | "root",
+    active: boolean
+  ) {
+    let i: number;
+    const chars = this.chars[style];
+    this.insert(chars[0], x, y, active);
+    this.insert(chars[2], x + width, y, active);
+    this.insert(chars[4], x + width, y + height, active);
+    this.insert(chars[6], x, y + height, active);
+    for (i = 1; i < width; i++) {
+      this.insert(chars[1], x + i, y, active);
+      this.insert(chars[5], x + i, y + height, active);
+    }
+    for (i = 1; i < height; i++) {
+      this.insert(chars[7], x, y + i, active);
+      this.insert(chars[3], x + width, y + i, active);
+    }
+  }
+
+  drawText(text: string, x: number, y: number, active: boolean) {
+    for (let i = 0; i < text.length; i++) {
+      this.insert(text[i], x + i, y, active);
+    }
+  }
+
+  drawNode(node: TNode) {
+    const { x, y, width, height, type, active, name } = node;
+    const style = type === "root" ? "root" : active ? "active" : "inactive";
+    if (node.hasChildren) {
+      this.drawRect(x, y, width, height, style, active);
+      this.insert(" ", x + 1, y, active);
+      this.insert(" ", x + name.length + 2, y, active);
+      this.drawText(name, x + 2, y, active);
+    } else {
+      this.drawText(name, x, y, active);
+    }
+  }
+
   clear(row: number, col: number) {
     if (this.rows[row]) {
       this.rows[row][col] = "";
@@ -439,6 +495,7 @@ class Grid {
   }
 
   render() {
+    console.log("\n");
     console.log(
       this.rows
         .map((row) => row.map((c) => (c === undefined ? " " : c)).join(""))
@@ -473,88 +530,66 @@ class TNode {
   }
 
   get width() {
-    let cx = this.x + this.name.length + 4;
-    for (let child of this.children) {
-      cx = Math.max(cx, child.maxX);
+    if (!this.hasChildren) {
+      return this.name.length;
     }
-    if (this.children.length > 0) {
-      cx += 1;
-    }
+
+    let cx = Math.max(
+      this.x + this.name.length + 5,
+      ...this.children.map((c) => c.maxX)
+    );
+
+    if (this.children.find((c) => c.type === "branch")) cx++;
+
+    cx++;
+
     return cx - this.x;
   }
 
   get height() {
-    let cy = this.y + 3;
-    for (let child of this.children) {
-      cy = Math.max(cy, child.maxY);
-    }
-    if (this.children.length > 0) {
-      cy++;
+    if (!this.hasChildren) {
+      return 1;
     }
 
+    let cy = Math.max(...this.children.map((c) => c.maxY));
+    if (cy > this.y + 3) cy++;
+
     return cy - this.y;
+  }
+
+  get hasChildren() {
+    return this.children.length > 0;
+  }
+
+  get type(): NodeType {
+    if (!this.parent) return "root";
+    if (this.children.length === 0) return "leaf";
+    return "branch";
   }
 
   moveTo(x: number, y: number) {
     this.x = x;
     this.y = y;
 
-    let cx = x + 1;
-    let cy = y + 2;
+    let cx = x + 2;
+    let cy = y + 1;
     let ch = 0;
 
     for (let i = 0; i < this.children.length; i++) {
       const child = this.children[i];
       if (cx > x + 50) {
-        cx = x + 1;
+        cx = x + 2;
         cy = y + 2 + ch;
         ch = 0;
       }
       child.moveTo(cx, cy);
       ch = Math.max(ch, child.height);
-      cx += child.width;
+      cx += child.width + (child.type === "leaf" ? 1 : 2);
     }
   }
 
   render() {
-    const { x, y, width: w, height: h } = this;
-    const cs = this.parent
-      ? this.active
-        ? ["┌", "─", "┒", "┃", "┛", "━", "┕", "│"]
-        : ["┌", "─", "┐", "│", "┘", "─", "└", "│"]
-      : ["┌", "╌", "┐", "╎", "┘", "╌", "└", "╎"];
-
-    const color = this.active;
-    for (let i = 0; i < w; i++) {
-      for (let j = 0; j < h; j++) {
-        if (j === 0) {
-          if (i === 0) {
-            grid.insert(cs[0], y + j, x + i, color);
-          } else if (i === w - 1) {
-            grid.insert(cs[2], y + j, x + i, color);
-          } else {
-            grid.insert(cs[1], y + j, x + i, color);
-          }
-        } else if (j === 1) {
-          grid.insert(cs[7], y + j, x, color);
-          grid.insert(cs[3], y + j, x + w - 1, color);
-          for (let k = 0; k < this.name.length; k++) {
-            grid.insert(this.name[k], y + j, 2 + x + k, color);
-          }
-        } else if (j === h - 1) {
-          if (i === 0) {
-            grid.insert(cs[6], y + j, x + i, color);
-          } else if (i === w - 1) {
-            grid.insert(cs[4], y + j, x + i, color);
-          } else {
-            grid.insert(cs[5], y + j, x + i, color);
-          }
-        } else if (j < h - 1) {
-          grid.insert(cs[7], y + j, x, color);
-          grid.insert(cs[3], y + j, x + w - 1, color);
-        }
-      }
-    }
+    grid.drawNode(this);
 
     for (let child of this.children) {
       child.render();
