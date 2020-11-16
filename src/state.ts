@@ -426,7 +426,9 @@ export default state;
 type NodeType = "leaf" | "branch" | "root";
 
 class Grid {
-  rows = [] as string[][];
+  rows = [] as { char: string; node?: TNode }[][];
+  width = 0;
+  height = 0;
 
   chars = {
     active: ["┌", "─", "┒", "┃", "┛", "━", "┕", "│"],
@@ -434,15 +436,15 @@ class Grid {
     root: ["┌", "╌", "┐", "╎", "┘", "╌", "└", "╎"],
   };
 
-  insert(char: string, col: number, row: number, color = false) {
-    if (this.rows[row] === undefined) {
-      this.rows[row] = [];
-    }
+  setSize(width: number, height: number) {
+    this.rows = Array.from(Array(height)).map(() =>
+      Array.from(Array(width)).map(() => ({ char: " ", node: undefined }))
+    );
+  }
 
-    for (let i = 0; i < col; i++) {
-      if (this.rows[row][i] === undefined) this.rows[row][i] = " ";
-    }
-    this.rows[row][col] = color ? char : `\x1b[38;2;144;144;144m${char}\x1b[0m`;
+  insert(char: string, col: number, row: number, node: TNode) {
+    if (this.rows[row] === undefined) this.rows[row] = [];
+    this.rows[row][col] = { char, node };
   }
 
   drawRect(
@@ -451,56 +453,71 @@ class Grid {
     width: number,
     height: number,
     style: "active" | "inactive" | "root",
-    active: boolean
+    node: TNode
   ) {
     let i: number;
     const chars = this.chars[style];
-    this.insert(chars[0], x, y, active);
-    this.insert(chars[2], x + width, y, active);
-    this.insert(chars[4], x + width, y + height, active);
-    this.insert(chars[6], x, y + height, active);
+    this.insert(chars[0], x, y, node);
+    this.insert(chars[2], x + width, y, node);
+    this.insert(chars[4], x + width, y + height, node);
+    this.insert(chars[6], x, y + height, node);
     for (i = 1; i < width; i++) {
-      this.insert(chars[1], x + i, y, active);
-      this.insert(chars[5], x + i, y + height, active);
+      this.insert(chars[1], x + i, y, node);
+      this.insert(chars[5], x + i, y + height, node);
     }
     for (i = 1; i < height; i++) {
-      this.insert(chars[7], x, y + i, active);
-      this.insert(chars[3], x + width, y + i, active);
+      this.insert(chars[7], x, y + i, node);
+      this.insert(chars[3], x + width, y + i, node);
     }
   }
 
-  drawText(text: string, x: number, y: number, active: boolean) {
+  drawText(text: string, x: number, y: number, node: TNode) {
     for (let i = 0; i < text.length; i++) {
-      this.insert(text[i], x + i, y, active);
+      this.insert(text[i], x + i, y, node);
     }
   }
 
   drawNode(node: TNode) {
-    const { x, y, width, height, type, active, name } = node;
-    const style = type === "root" ? "root" : active ? "active" : "inactive";
+    const { x, y, width, height, type, state, name } = node;
+    const style =
+      type === "root" ? "root" : state.active ? "active" : "inactive";
     if (node.hasChildren) {
-      this.drawRect(x, y, width, height, style, active);
-      this.insert(" ", x + 1, y, active);
-      this.insert(" ", x + name.length + 2, y, active);
-      this.drawText(name, x + 2, y, active);
+      this.drawRect(x, y, width, height, style, node);
+      this.insert(" ", x + 1, y, node);
+      this.insert(" ", x + name.length + 2, y, node);
+      this.drawText(name, x + 2, y, node);
     } else {
-      this.drawText(name, x, y, active);
+      this.drawText(name, x, y, node);
     }
-  }
 
-  clear(row: number, col: number) {
-    if (this.rows[row]) {
-      this.rows[row][col] = "";
+    for (let child of node.children) {
+      this.drawNode(child);
     }
   }
 
   render() {
-    console.log("\n");
     console.log(
       this.rows
-        .map((row) => row.map((c) => (c === undefined ? " " : c)).join(""))
+        .map((row) =>
+          row
+            .map((cell) =>
+              cell
+                ? cell.node?.state.active
+                  ? cell.char
+                  : `\x1b[38;2;144;144;144m${cell.char}\x1b[0m`
+                : " "
+            )
+            .join("")
+        )
         .join("\n")
     );
+  }
+
+  init(node: TNode) {
+    node.moveTo(0, 0);
+    this.setSize(node.width, node.height);
+    this.drawNode(node);
+    this.render();
   }
 }
 
@@ -508,15 +525,15 @@ const grid = new Grid();
 
 class TNode {
   name: string;
-  active: boolean;
   parent: TNode | undefined;
+  state: S.State<any, any>;
   children: TNode[];
   x = 0;
   y = 0;
 
   constructor(state: S.State<any, any>, parent?: TNode) {
+    this.state = state;
     this.name = state.name;
-    this.active = state.active;
     this.parent = parent;
     this.children = Object.values(state.states).map((s) => new TNode(s, this));
   }
@@ -571,36 +588,32 @@ class TNode {
     this.x = x;
     this.y = y;
 
-    let cx = x + 2;
-    let cy = y + 1;
-    let ch = 0;
+    let sx = x + 2;
+    let sy = y + 1;
 
     for (let i = 0; i < this.children.length; i++) {
       const child = this.children[i];
-      if (cx > x + 50) {
-        cx = x + 2;
-        cy = y + 2 + ch;
-        ch = 0;
+
+      child.moveTo(sx, sy);
+
+      let mx = child.width + (child.type === "leaf" ? 1 : 2);
+      let my = child.height + (child.type === "leaf" ? 0 : 1);
+
+      if (i % 2 === 0) {
+        sx += mx;
+      } else {
+        sx = x + 2;
+        sy += my;
       }
-      child.moveTo(cx, cy);
-      ch = Math.max(ch, child.height);
-      cx += child.width + (child.type === "leaf" ? 1 : 2);
-    }
-  }
-
-  render() {
-    grid.drawNode(this);
-
-    for (let child of this.children) {
-      child.render();
     }
   }
 }
 
+const tTree = new TNode(state.stateTree);
+grid.init(tTree);
+grid.render();
+
 state.onUpdate((update) => {
-  const tTree = new TNode(update.stateTree);
-  tTree.moveTo(0, 0);
-  tTree.render();
   grid.render();
   console.log("Last Event:", update.log[0]);
 });
