@@ -81,7 +81,7 @@ class Grid {
               cell
                 ? cell.node?.state.active
                   ? cell.char
-                  : `\x1b[31m${cell.char}\x1b[0m`
+                  : `\x1b[38;2;144;144;144m${cell.char}\x1b[0m`
                 : " "
             )
             .join("")
