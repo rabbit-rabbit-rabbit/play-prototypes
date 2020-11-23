@@ -28,12 +28,15 @@ export interface User {
 export type TestStatus = "inProgress" | "complete" | "draft"
 
 export interface TestJourney {
+  id: string
   duration: number
   pages: number
   interactions: number
 }
 
 export interface TestGoal {
+  id: string
+  saved: boolean
   description: string
   journey?: TestJourney
 }

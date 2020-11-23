@@ -73,7 +73,11 @@ export default function FindUserScreen() {
   }
 
   return (
-    <Panel.Container isOpen={visible} onClose={() => send("CLOSED_MODAL")}>
+    <Panel.Container
+      id="findUser"
+      isOpen={visible}
+      onClose={() => send("CLOSED_MODAL")}
+    >
       <Panel.Header
         title="Share"
         leftAction={{

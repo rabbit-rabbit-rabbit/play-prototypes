@@ -16,6 +16,14 @@ export const Text = {
     fontWeight: "$title",
     letterSpacing: "$title",
   }),
+  Instruction: styled(_Text)({
+    color: "$secondaryFill",
+    fontSize: 14,
+    lineHeight: 18,
+    textAlign: "center",
+    fontWeight: "400",
+    paddingHorizontal: 32,
+  }),
   Detail: styled(_Text)({
     color: "$secondaryFill",
     fontSize: "$detail",

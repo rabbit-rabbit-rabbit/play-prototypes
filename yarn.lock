@@ -1374,10 +1374,10 @@
   resolved "https://registry.yarnpkg.com/@react-native-community/slider/-/slider-3.0.3.tgz#830167fd757ba70ac638747ba3169b2dbae60330"
   integrity sha512-8IeHfDwJ9/CTUwFs6x90VlobV3BfuPgNLjTgC6dRZovfCWigaZwVNIFFJnHBakK3pW2xErAPwhdvNR4JeNoYbw==
 
-"@state-designer/core@1.2.31":
-  version "1.2.31"
-  resolved "https://registry.yarnpkg.com/@state-designer/core/-/core-1.2.31.tgz#6884e07da766a234fff5cb4f576a56cf5aa6c026"
-  integrity sha512-TIYb21arYP1fR9X/Qzti2/9AiN2xpZrWGHrd34Vg1Pd4FLu+j+rZ74ECqT6nTeJh8K50fC9kRAg+9toXKPHBLA==
+"@state-designer/core@1.3.32":
+  version "1.3.32"
+  resolved "https://registry.yarnpkg.com/@state-designer/core/-/core-1.3.32.tgz#ecf8dce1952e7dda3d681bca585994f83bd122c5"
+  integrity sha512-CfYzB0HF1jnxrPGMRkUKh99nwtqFm93Nw5KJl7JR1AffU606wqgrm7iDycZFovy7NT9094yIYtMeS6OpRXNohg==
   dependencies:
     immer "^7.0.0"
     lodash "^4.17.15"
@@ -1385,12 +1385,12 @@
     object.entries "^1.1.1"
     object.fromentries "^2.0.2"
 
-"@state-designer/react@^1.2.31":
-  version "1.2.31"
-  resolved "https://registry.yarnpkg.com/@state-designer/react/-/react-1.2.31.tgz#99e3787f56d08c680b483a998424d5684d707cfa"
-  integrity sha512-3u+uRsvFRmYjhjfUX6KLt/PaswYVyca5d1bBNyzuzAXtHo/IvZc7SCGvrnguFYM5Oh6vCvNW3lACAw5ZKISmNA==
+"@state-designer/react@^1.3.32":
+  version "1.3.32"
+  resolved "https://registry.yarnpkg.com/@state-designer/react/-/react-1.3.32.tgz#85caeea03de068b065dc5efab786c111e8fa6796"
+  integrity sha512-IFPu2qsPwjNT+h6tsFbNKiOyRHosDRBAHNZ4krtIGHfQSpfCWi5L7K2aFpgzdPWxdoAD+RqNi4KifNfJQNwWTg==
   dependencies:
-    "@state-designer/core" "1.2.31"
+    "@state-designer/core" "1.3.32"
     lodash-es "^4.17.15"
 
 "@styled-system/background@^5.1.2":
@@ -1576,6 +1576,11 @@
   dependencies:
     "@types/istanbul-lib-coverage" "*"
     "@types/istanbul-lib-report" "*"
+
+"@types/lodash@^4.14.165":
+  version "4.14.165"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.165.tgz#74d55d947452e2de0742bad65270433b63a8c30f"
+  integrity sha512-tjSSOTHhI5mCHTy/OOXYIhi2Wt1qcbHmuXD1Ha7q70CgI/I71afO4XtLb/cVexki1oVYchpul/TOuu3Arcdxrg==
 
 "@types/parse-json@^4.0.0":
   version "4.0.0"
@@ -4031,7 +4036,7 @@ lodash.throttle@^4.1.1:
   resolved "https://registry.yarnpkg.com/lodash.throttle/-/lodash.throttle-4.1.1.tgz#c23e91b710242ac70c37f1e1cda9274cc39bf2f4"
   integrity sha1-wj6RtxAkKscMN/HhzaknTMOb8vQ=
 
-lodash@^4.17.11, lodash@^4.17.13, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.4, lodash@^4.3.0, lodash@^4.5.0, lodash@^4.6.0:
+lodash@^4.17.11, lodash@^4.17.13, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.20, lodash@^4.17.4, lodash@^4.3.0, lodash@^4.5.0, lodash@^4.6.0:
   version "4.17.20"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.20.tgz#b44a9b6297bcb698f1c51a3545a2b3b368d59c52"
   integrity sha512-PlhdFcillOINfeV7Ni6oF1TAEayyZBoZ8bcshTHqOYJYlrqzRK5hagpagky5o4HfCzzd1TRkXPMFq6cKk9rGmA==

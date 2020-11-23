@@ -49,9 +49,9 @@ export default function CreateDraftDialog({ visible }: { visible: boolean }) {
         <Dialog.Button label="Cancel" onPress={() => send("CLOSED_DIALOG")} />
         <Dialog.Button
           label="Create"
-          disabled={name.length === 0}
+          disabled={name.length < 3}
           color={name.length === 0 ? "rgba(255, 255, 255, .5)" : "#0085FF"}
-          onPress={() => send("CREATED_DRAFT", { name })}
+          onPress={() => name.length > 3 && send("CREATED_DRAFT", { name })}
         />
       </Dialog.Container>
     </View>

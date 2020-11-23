@@ -1,17 +1,23 @@
-import * as React from "react";
-import { StyleSheet, ViewStyle, View } from "react-native";
-import { SwipeablePanel } from "./core";
+import * as React from "react"
+import { StyleSheet, ViewStyle, View } from "react-native"
+import { SwipeablePanel } from "./core"
+
+import usePanelStack from "@hooks/usePanelStack"
 
 export type PanelContainerProps = {
-  isOpen: boolean;
-  zIndex?: number;
-  stayOpen?: boolean;
-  onClose?: () => void;
-  children?: React.ReactNode;
-  style?: ViewStyle;
-};
+  id: string
+  isOpen: boolean
+  zIndex?: number
+  stayOpen?: boolean
+  onClose?: () => void
+  children?: React.ReactNode
+  style?: ViewStyle
+}
+
+let id = 0
 
 export default function Container({
+  id,
   isOpen,
   stayOpen,
   onClose,
@@ -19,6 +25,8 @@ export default function Container({
   zIndex = 1,
   children,
 }: PanelContainerProps) {
+  const { zIndex: z, isTopPanel } = usePanelStack(id, isOpen)
+
   return (
     <View
       style={{
@@ -36,12 +44,13 @@ export default function Container({
         onClose={onClose}
         style={[styles.Panel, style]}
         barStyle={styles.PanelBar}
+        showScrim={isTopPanel}
         onlyLarge
       >
         {children}
       </SwipeablePanel>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -75,4 +84,4 @@ const styles = StyleSheet.create({
     right: 8,
     top: -12,
   },
-});
+})

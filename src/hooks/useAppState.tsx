@@ -1,8 +1,8 @@
 import state from "../state"
-import useGlobalState from "./useGlobalState"
+import { useStateDesigner } from "@state-designer/react"
 
 export default function useAppState() {
-  return useGlobalState(state)
+  return useStateDesigner(state)
 }
 
 export function send(event: string, payload: any = {}) {
