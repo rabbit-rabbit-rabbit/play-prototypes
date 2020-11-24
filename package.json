@@ -17,8 +17,12 @@
     "react-dom": "~16.13.0",
     "react-native": "https://github.com/expo/react-native/archive/sdk-39.0.2.tar.gz",
     "react-native-dialog": "^6.1.2",
-    "react-native-reanimated": "^1.13.1",
+    "react-native-draggable-flatlist": "^2.5.0",
+    "react-native-gesture-handler": "^1.9.0",
+    "react-native-reanimated": "^1.13.2",
     "react-native-screens": "~2.10.1",
+    "react-native-swipe-list-view": "^3.2.5",
+    "react-native-swipeable-item": "^1.5.2",
     "react-native-web": "0.13.13",
     "rn-swipeable-panel": "^1.2.3",
     "styled-components": "^5.2.1",
@@ -30,6 +34,10 @@
     "@types/react-dom": "~16.9.8",
     "@types/react-native": "~0.63.20",
     "typescript": "~3.8.3"
+  },
+  "prettier": {
+    "semi": false,
+    "trailingComma": "es5"
   },
   "scripts": {
     "start": "expo start --ios",

@@ -1,3 +1,4 @@
+import debounce from "lodash/debounce"
 import { S } from "@state-designer/react"
 
 type NodeType = "leaf" | "branch" | "root"
@@ -190,8 +191,10 @@ export function renderState(state: S.DesignedState<any, any>) {
   const tree = new TNode(state.stateTree)
   grid.init(tree)
   grid.render()
-  state.onUpdate(() => {
-    grid.render()
-    console.log(state.log[0])
-  })
+  state.onUpdate(
+    debounce(() => {
+      grid.render()
+      console.log(state.log[0])
+    }, 250)
+  )
 }

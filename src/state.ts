@@ -12,6 +12,7 @@ const state = createState({
     selectedUserId: undefined as string | undefined,
     selectedTestId: undefined as string | undefined,
     selectedGoalId: undefined as string | undefined,
+    selectedQuestionId: undefined as string | undefined,
   },
   states: {
     page: {
@@ -57,7 +58,12 @@ const state = createState({
         },
         draftTest: {
           on: {
-            CLOSED_PANEL: { do: "clearSelectedTest", to: "tests" },
+            CLOSED_DRAFT_PANEL: {
+              get: "selectedTest",
+              if: "selectedTestIsValid",
+              do: "clearSelectedTest",
+              to: "tests",
+            },
             RENAMED_DRAFT: { get: "selectedTest", do: "setDraftName" },
             TOGGLED_DATA_PROPERTY: {
               get: "selectedTest",
@@ -96,34 +102,17 @@ const state = createState({
               initial: "goalsList",
               states: {
                 goalsList: {
-                  initial: "goalsListIdle",
-                  states: {
-                    goalsListIdle: {
-                      on: {
-                        CONTINUED: { to: "survey" },
-                        BACKED: { to: "newDraft" },
-                        STARTED_CREATING_GOAL: { to: "creatingGoal" },
-                        OPENED_GOAL_DIALOG: { to: "goalDialog" },
-                      },
+                  on: {
+                    CONTINUED: { to: "survey" },
+                    BACKED: { to: "newDraft" },
+                    STARTED_CREATING_GOAL: { to: "creatingGoal" },
+                    DELETED_GOAL: {
+                      get: "selectedTest",
+                      do: "deleteGoal",
                     },
-                    goalDialog: {
-                      on: {
-                        CLOSED_DIALOG: { to: "goalsListIdle" },
-                        STARTED_REORDERING: { to: "reorderingGoals" },
-                        DELETED_GOAL: {
-                          get: "selectedTest",
-                          do: "deleteGoal",
-                          to: "goalsListIdle",
-                        },
-                      },
-                    },
-                    reorderingGoals: {
-                      on: {
-                        MOVED_GOAL: {
-                          get: "selectedTest",
-                          do: "moveGoal",
-                        },
-                      },
+                    REORDERED_GOALS: {
+                      get: "selectedTest",
+                      do: "reorderGoals",
                     },
                   },
                 },
@@ -223,10 +212,116 @@ const state = createState({
                   on: {
                     CONTINUED: { to: "publish" },
                     BACKED: { to: "goals" },
-                    CREATED_GOAL: { to: "creatingQuestion" },
+                    STARTED_CREATING_QUESTION: { to: "selectingQuestionType" },
+                    DELETED_QUESTION: {
+                      get: "selectedTest",
+                      do: "deleteQuestion",
+                    },
+                    REORDERED_QUESTIONS: {
+                      get: "selectedTest",
+                      do: "reorderQuestions",
+                    },
                   },
                 },
-                creatingQuestion: {},
+                selectingQuestionType: {
+                  on: {
+                    SELECTED_OPEN: {
+                      to: "question.openAnswerQuestion",
+                    },
+                    SELECTED_MULTIPLE: {
+                      to: "question.multipleChoiceQuestion",
+                    },
+                    SELECTED_SCALE: { to: "question.scaleQuestion" },
+                    CLOSED_DIALOG: { to: "questionsList" },
+                  },
+                },
+                creatingQuestion: {
+                  states: {
+                    question: {
+                      onEnter: {
+                        get: "selectedTest",
+                        do: "createUnsavedQuestion",
+                      },
+                      on: {
+                        ATTEMPTED_CLOSED: {
+                          to: "questionDialog.confirmingClose",
+                        },
+                        CHANGED_QUESTION_DESCRIPTION: {
+                          get: "selectedTest",
+                          do: "updateQuestionDescription",
+                        },
+                        CREATED_QUESTION: {
+                          get: "selectedTest",
+                          do: [
+                            "saveSelectedQuestion",
+                            "cleanupQuestions",
+                            "clearSelectedQuestion",
+                          ],
+                          to: "questionsList",
+                        },
+                      },
+                      initial: "openAnswerQuestion",
+                      states: {
+                        openAnswerQuestion: {
+                          on: {
+                            SET_CHARACTER_COUNT: {
+                              get: "selectedTest",
+                              do: "updateQuestionCharacterCount",
+                            },
+                          },
+                        },
+                        multipleChoiceQuestion: {
+                          on: {
+                            SET_CHOICES_COUNT: {
+                              get: "selectedTest",
+                              do: "updateQuestionChoicesCount",
+                            },
+                            SET_CHOICES_MULTIPLE: {
+                              get: "selectedTest",
+                              do: "updateQuestionMultiple",
+                            },
+                            EDITED_CHOICE: {
+                              get: "selectedTest",
+                              do: "updateChoiceTitle",
+                            },
+                          },
+                        },
+                        scaleQuestion: {
+                          on: {
+                            SET_LEFT_LABEL: {
+                              get: "selectedTest",
+                              do: "updateQuestionLeftLabel",
+                            },
+                            SET_RIGHT_LABEL: {
+                              get: "selectedTest",
+                              do: "updateQuestionRightLabel",
+                            },
+                            SET_SCALE_AMOUNT: {
+                              get: "selectedTest",
+                              do: "updateScaleAmount",
+                            },
+                          },
+                        },
+                      },
+                    },
+                    questionDialog: {
+                      initial: "idle",
+                      states: {
+                        idle: {},
+                        confirmingClose: {
+                          on: {
+                            CLOSED_DIALOG: { to: "questionDialog.idle" },
+                            CONFIRMED_CLOSE: {
+                              get: "selectedTest",
+                              do: "cleanupQuestions",
+                              to: "questionsList",
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
               },
             },
             publish: {
@@ -351,8 +446,16 @@ const state = createState({
     selectedUser(data) {
       return data.users.find((t) => t.id === data.selectedUserId)
     },
+    selectedQuestion(data) {
+      return data.tests
+        .find((t) => t.id === data.selectedTestId)
+        ?.survey.find((question) => question.id === data.selectedQuestionId)
+    },
   },
   conditions: {
+    selectedTestIsValid(data, _, selectedTest: Types.UserTest) {
+      return selectedTest.name.length > 0
+    },
     selectedTestIsDraft(data, _, selectedTest) {
       if (selectedTest === undefined) return false
       return selectedTest.status === "draft"
@@ -448,7 +551,6 @@ const state = createState({
     },
     removeUserFromDraft(data, _, selectedTest: Types.UserTest) {
       if (!selectedTest) return
-      console.log("removing", data.selectedUserId)
       const index = selectedTest.invitedUsers.findIndex(
         (t) => t.id === data.selectedUserId
       )
@@ -462,9 +564,13 @@ const state = createState({
       data.selectedUserId = ""
     },
     // Goals
-    deleteGoal(data, { id }: { id: string }, selectedTest: Types.UserTest) {
-      const index = selectedTest.goals.findIndex((g) => g.id === id)
+    deleteGoal(data, { index }, selectedTest: Types.UserTest) {
       selectedTest.goals.splice(index, 1)
+    },
+    reorderGoals(data, { from, to }, selectedTest: Types.UserTest) {
+      const t = selectedTest.goals[from]
+      selectedTest.goals[from] = selectedTest.goals[to]
+      selectedTest.goals[to] = t
     },
     moveGoal(
       data,
@@ -517,8 +623,96 @@ const state = createState({
       data.selectedGoalId = undefined
     },
     cleanupGoals(data, _, selectedTest: Types.UserTest) {
-      console.log(selectedTest.goals.length)
       selectedTest.goals = selectedTest.goals.filter((g) => g.saved)
+    },
+    // Survey Questions
+    createUnsavedQuestion(
+      data,
+      type = Types.QuestionType.Open,
+      selectedTest: Types.UserTest
+    ) {
+      const id = uniqueId()
+      data.selectedQuestionId = id
+      selectedTest.survey.push({
+        id,
+        type,
+        saved: false,
+        characterCount: 160,
+        description: "",
+        optionCount: 3,
+        scaleAmount: 5,
+        leftScaleLabel: "",
+        rightScaleLabel: "",
+        selectMultiple: false,
+        options: Array.from(Array(10)).map((_, i) => ""),
+      })
+    },
+    updateQuestionDescription(data, { text }, selectedTest: Types.UserTest) {
+      selectedTest.survey.find(
+        (q) => q.id === data.selectedQuestionId
+      ).description = text
+    },
+    updateQuestionCharacterCount(
+      data,
+      { count },
+      selectedTest: Types.UserTest
+    ) {
+      selectedTest.survey.find(
+        (q) => q.id === data.selectedQuestionId
+      ).characterCount = Math.round(count)
+    },
+    updateQuestionChoicesCount(data, { count }, selectedTest: Types.UserTest) {
+      selectedTest.survey.find(
+        (q) => q.id === data.selectedQuestionId
+      ).optionCount = Math.floor(count)
+    },
+    updateQuestionMultiple(data, value, selectedTest: Types.UserTest) {
+      selectedTest.survey.find(
+        (q) => q.id === data.selectedQuestionId
+      ).selectMultiple = value
+    },
+    updateChoiceTitle(
+      data,
+      { index, text }: { index: number; text: string },
+      selectedTest: Types.UserTest
+    ) {
+      selectedTest.survey.find((q) => q.id === data.selectedQuestionId).options[
+        index
+      ] = text
+    },
+    updateQuestionLeftLabel(data, { text }, selectedTest: Types.UserTest) {
+      selectedTest.survey.find(
+        (q) => q.id === data.selectedQuestionId
+      ).leftScaleLabel = text
+    },
+    updateQuestionRightLabel(data, { text }, selectedTest: Types.UserTest) {
+      selectedTest.survey.find(
+        (q) => q.id === data.selectedQuestionId
+      ).rightScaleLabel = text
+    },
+    updateScaleAmount(data, { count }, selectedTest: Types.UserTest) {
+      selectedTest.survey.find(
+        (q) => q.id === data.selectedQuestionId
+      ).scaleAmount = Math.floor(count)
+    },
+    cleanupQuestions(data, _, selectedTest: Types.UserTest) {
+      selectedTest.survey = selectedTest.survey.filter((g) => g.saved)
+    },
+    clearSelectedQuestion(data) {
+      data.selectedQuestionId = undefined
+    },
+    saveSelectedQuestion(data, _, selectedTest: Types.UserTest) {
+      selectedTest.survey.find(
+        (q) => q.id === data.selectedQuestionId
+      ).saved = true
+    },
+    deleteQuestion(data, { index }, selectedTest: Types.UserTest) {
+      selectedTest.survey.splice(index, 1)
+    },
+    reorderQuestions(data, { from, to }, selectedTest: Types.UserTest) {
+      const t = selectedTest.survey[from]
+      selectedTest.survey[from] = selectedTest.survey[to]
+      selectedTest.survey[to] = t
     },
   },
   values: {
@@ -529,6 +723,11 @@ const state = createState({
       return data.tests
         .find((t) => t.id === data.selectedTestId)
         ?.goals.find((goal) => goal.id === data.selectedGoalId)
+    },
+    selectedQuestion(data) {
+      return data.tests
+        .find((t) => t.id === data.selectedTestId)
+        ?.survey.find((goal) => goal.id === data.selectedQuestionId)
     },
   },
 })

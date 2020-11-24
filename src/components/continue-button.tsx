@@ -19,6 +19,7 @@ export default function ContinueButton({
   return (
     <TouchableOpacity
       onPress={onPress}
+      disabled={disabled}
       style={{
         ...styles.Container,
         backgroundColor: disabled ? "rgba(255, 255, 255, .1)" : "#00FF9D",

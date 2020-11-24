@@ -1,11 +1,6 @@
 import * as React from "react"
-import {
-  TouchableOpacity,
-  View,
-  ButtonProps,
-  StyleProp,
-  ViewStyle,
-} from "react-native"
+import { TouchableOpacity } from "react-native-gesture-handler"
+import { View, ButtonProps, StyleProp, ViewStyle } from "react-native"
 import { Feather } from "@expo/vector-icons"
 
 export type IconButtonProps = {
@@ -13,7 +8,9 @@ export type IconButtonProps = {
   color?: string
   style?: ViewStyle
   size?: number
-} & Pick<ButtonProps, "onPress">
+  onLongPress?: () => void
+  onPress?: () => void
+}
 
 export default function IconButton({
   icon = "more-horizontal",

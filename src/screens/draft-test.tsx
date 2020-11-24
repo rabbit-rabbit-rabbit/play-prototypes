@@ -25,11 +25,13 @@ export default function DraftTestScreen() {
     <Panel.Container
       id="draftTest"
       isOpen={local.isIn("draftTest")}
-      onClose={() => send("CLOSED_PANEL")}
+      stayOpen={local.isIn("draftTest")}
+      onClose={() => send("CLOSED_DRAFT_PANEL")}
+      onCloseAttempt={() => send("CLOSED_DRAFT_PANEL")}
     >
       <Panel.Header
         title={local.whenIn({
-          newDraft: "New User Test",
+          newDraft: "Draft User Test",
           goals: "Set a Goal",
           survey: "Create a Survey",
           publish: "Publish Test",
@@ -46,12 +48,20 @@ export default function DraftTestScreen() {
             onPress: () => send("CLOSED_PANEL"),
           }
         }
-        rightButton={
-          local.isIn("newDraft") && {
+        rightButton={local.whenIn({
+          newDraft: {
             icon: "more-horizontal",
             onPress: () => send("OPENED_MENU"),
-          }
-        }
+          },
+          goals: {
+            icon: "plus",
+            onPress: () => send("STARTED_CREATING_GOAL"),
+          },
+          survey: {
+            icon: "plus",
+            onPress: () => send("STARTED_CREATING_QUESTION"),
+          },
+        })}
       />
       <View style={styles.Content}>
         <PageIndicators

@@ -1,22 +1,23 @@
-import * as React from "react";
-import { StyleSheet, TextInput } from "react-native";
+import * as React from "react"
+import { StyleSheet, TextInput } from "react-native"
 
 export type InputProps = {
-  value?: string;
-  placeholder?: string;
-  lines?: number;
-  onChange?: (text: string) => void;
-};
+  value?: string
+  placeholder?: string
+  lines?: number
+  warn?: boolean
+  onChange?: (text: string) => void
+}
 
 function Input(
-  { onChange, value, lines, placeholder }: InputProps,
+  { onChange, value, lines, placeholder, warn }: InputProps,
   ref: React.MutableRefObject<TextInput>
 ) {
-  const [text, setText] = React.useState(value);
+  const [text, setText] = React.useState(value)
 
   React.useEffect(() => {
-    setText(value);
-  }, [value]);
+    setText(value)
+  }, [value])
 
   return (
     <TextInput
@@ -28,19 +29,20 @@ function Input(
       numberOfLines={lines}
       onChangeText={(newText) => {
         if (text !== newText) {
-          setText(newText);
-          onChange && onChange(newText);
+          setText(newText)
+          onChange && onChange(newText)
         }
       }}
       style={[
         styles.Container,
         lines ? { height: lines * (40 - 24) + 24 } : {},
+        warn ? styles.Warn : null,
       ]}
     />
-  );
+  )
 }
 
-export default React.forwardRef(Input);
+export default React.forwardRef(Input)
 
 const styles = StyleSheet.create({
   Container: {
@@ -55,4 +57,8 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     paddingHorizontal: 16,
   },
-});
+  Warn: {
+    backgroundColor: "#3b2a2a",
+    borderStyle: "solid",
+  },
+})

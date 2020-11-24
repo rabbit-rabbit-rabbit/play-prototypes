@@ -10,6 +10,7 @@ export type PanelContainerProps = {
   zIndex?: number
   stayOpen?: boolean
   onClose?: () => void
+  onCloseAttempt?: () => void
   children?: React.ReactNode
   style?: ViewStyle
 }
@@ -21,6 +22,7 @@ export default function Container({
   isOpen,
   stayOpen,
   onClose,
+  onCloseAttempt,
   style,
   zIndex = 1,
   children,
@@ -30,7 +32,7 @@ export default function Container({
   return (
     <View
       style={{
-        zIndex,
+        // zIndex,
         position: "absolute",
         bottom: 0,
         width: "100%",
@@ -42,6 +44,7 @@ export default function Container({
         isActive={isOpen}
         stayOpen={stayOpen}
         onClose={onClose}
+        onCloseAttempt={onCloseAttempt}
         style={[styles.Panel, style]}
         barStyle={styles.PanelBar}
         showScrim={isTopPanel}

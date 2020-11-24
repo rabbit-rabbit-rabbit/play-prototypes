@@ -41,7 +41,7 @@ export interface TestGoal {
   journey?: TestJourney
 }
 
-enum QuestionType {
+export enum QuestionType {
   Open = "open",
   MultipleChoice = "multipleChoice",
   Scale = "scale",
@@ -51,24 +51,32 @@ export interface QuestionBase {
   id: string
   type: QuestionType
   description: string
+  characterCount?: number
+  optionCount?: number
+  options?: string[]
+  scaleAmount?: number
+  selectMultiple?: boolean
+  leftScaleLabel?: string
+  rightScaleLabel?: string
+  saved: boolean
 }
 
 interface OpenAnswerQuestion extends QuestionBase {
   type: QuestionType.Open
-  multiline: boolean
+  characterCount: number
 }
 
 interface MultipleChoiceQuestion extends QuestionBase {
   type: QuestionType.MultipleChoice
   options: string[]
+  selectMultiple: boolean
 }
 
 interface ScaleQuestion extends QuestionBase {
   type: QuestionType.MultipleChoice
-  min: number
-  max: number
-  step: number
-  default: number
+  scaleAmount: number
+  leftScaleLabel: string
+  rightScaleLabel: string
 }
 
 export type SurveyQuestion =

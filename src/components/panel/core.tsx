@@ -31,6 +31,7 @@ type SwipeablePanelProps = {
   isActive: boolean
   stayOpen?: boolean
   onClose?: () => void
+  onCloseAttempt?: () => void
   showCloseButton?: boolean
   fullWidth?: boolean
   noBackgroundOpacity?: boolean
@@ -50,6 +51,7 @@ function SwipeablePanel({
   style,
   barStyle,
   onClose,
+  onCloseAttempt,
   isActive = false,
   openLarge = true,
   onlySmall = false,
@@ -102,11 +104,14 @@ function SwipeablePanel({
                   RELEASED_SWIPING_DOWN: {
                     if: "canClose",
                     to: "animatingToClosed",
-                    else: {
-                      if: "isOnlyLarge",
-                      to: "animatingToLarge",
-                      else: { to: "animatingToSmall" },
-                    },
+                    else: [
+                      "handleCloseAttempt",
+                      {
+                        if: "isOnlyLarge",
+                        to: "animatingToLarge",
+                        else: { to: "animatingToSmall" },
+                      },
+                    ],
                   },
                 },
               },
@@ -123,7 +128,10 @@ function SwipeablePanel({
                     {
                       if: "canClose",
                       to: "animatingToClosed",
-                      else: { to: "animatingToSmall" },
+                      else: {
+                        do: "handleCloseAttempt",
+                        to: "animatingToSmall",
+                      },
                     },
                   ],
                 },
@@ -240,6 +248,9 @@ function SwipeablePanel({
       },
       notifyOnClose() {
         onClose && onClose()
+      },
+      handleCloseAttempt() {
+        onCloseAttempt && onCloseAttempt()
       },
     },
     asyncs: {

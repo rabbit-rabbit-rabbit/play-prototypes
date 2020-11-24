@@ -4,41 +4,26 @@ import { Spacers } from "@components/styled"
 import Button, { Content, ContentLeft, ContentRight } from "@components/button"
 import JourneyDetail from "@components/journey-detail"
 import Input from "@components/input"
-import {
-  View,
-  ScrollView,
-  Text as _Text,
-  TextInput,
-  StyleSheet,
-} from "react-native"
+import { View, ScrollView, Text as _Text, StyleSheet } from "react-native"
 import { Text } from "@components/styled"
 import useAppState, { send } from "@hooks/useAppState"
 import styles from "./styles"
-import * as Types from "types"
-import useStaleSelectedTest from "@hooks/useStaleSelectedTest"
-import IconButton from "@components/icon-button"
-import { secondsToTimestamp } from "../utils"
 import { Feather } from "@expo/vector-icons"
 
 export default function CreateGoal() {
-  // const [text, setText] = React.useState("")
   const local = useAppState()
-
-  const selectedTest = local.data.tests.find(
-    (t) => t.id === local.data.selectedTestId
-  )
 
   const { selectedGoal } = local.values
 
   if (!selectedGoal) return null
-
-  console.log(selectedGoal.description)
 
   return (
     <Panel.Container
       id="createGoal"
       isOpen={local.isIn("creatingGoal")}
       onClose={() => send("CLOSED_GOALS")}
+      onCloseAttempt={() => send("CLOSED_GOALS")}
+      stayOpen={local.isIn("creatingGoal")}
     >
       <Panel.Header
         title="User Goal"

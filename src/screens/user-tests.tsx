@@ -16,11 +16,12 @@ import InvitedUserDialog from "./dialogs/invited-user-dialog"
 import RecordJourneyDialog from "./dialogs/record-journey-dialog"
 import DraftTestDialog from "./dialogs/draft-test-dialog"
 import RecordingJourney from "./recording-journey"
-import CreateGoalPanel from "./create-goal"
-import FindUserPanel from "./find-user"
 import JourneyDialog from "./dialogs/journey-dialog"
+import GoalDialog from "./dialogs/goal-dialog"
 import CloseGoalDialog from "./dialogs/close-goal-dialog"
-import Reordering from "./re-ordering"
+import QuestionTypeDialog from "./dialogs/question-type-dialog"
+import Reordering from "./reordering"
+import CloseQuestionDialog from "./dialogs/close-question-dialog"
 
 export default function UserTestsScreen() {
   const local = useAppState()
@@ -60,7 +61,22 @@ export default function UserTestsScreen() {
       <RecordJourneyDialog visible={local.isIn("recordJourneyDialog")} />
       <JourneyDialog visible={local.isIn("journeyDialog")} />
       <CloseGoalDialog visible={local.isIn("closeGoalDialog")} />
+      <GoalDialog visible={local.isIn("goalDialog")} />
+      <CloseQuestionDialog
+        visible={local.isIn("questionDialog.confirmingClose")}
+      />
+      <QuestionTypeDialog visible={local.isIn("selectingQuestionType")} />
       {local.isIn("recordingJourney") && <RecordingJourney />}
+      {local.isIn("reorderingGoals") && (
+        <Reordering
+          items={local.values.selectedTest.goals.map(
+            (goal: Types.TestGoal) => ({
+              id: goal.id,
+              title: goal.description,
+            })
+          )}
+        />
+      )}
     </>
   )
 }

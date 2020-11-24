@@ -1,14 +1,15 @@
-import * as React from "react";
-import { DripsyProvider } from "dripsy";
-import UserTestsScreen from "./src/screens/user-tests";
-import DraftTestScreen from "./src/screens/draft-test";
-import InProgressTestScreen from "./src/screens/in-progress-test";
-import FindUserPanel from "./src/screens/find-user";
-import CreateGoalPanel from "./src/screens/create-goal";
-import CompleteTestScreen from "./src/screens/complete-test";
-import { StyleSheet, View, Dimensions } from "react-native";
-import theme from "./src/theme";
-import state from "./src/state";
+import * as React from "react"
+import { DripsyProvider } from "dripsy"
+import UserTestsScreen from "./src/screens/user-tests"
+import DraftTestScreen from "./src/screens/draft-test"
+import InProgressTestScreen from "./src/screens/in-progress-test"
+import FindUserPanel from "./src/screens/find-user"
+import CreateGoalPanel from "./src/screens/create-goal"
+import EditQuestionPanel from "./src/screens/edit-question"
+import CompleteTestScreen from "./src/screens/complete-test"
+import { StyleSheet, View, Dimensions } from "react-native"
+import theme from "./src/theme"
+import state from "./src/state"
 
 export default function App() {
   return (
@@ -22,10 +23,11 @@ export default function App() {
           <CompleteTestScreen />
           <FindUserPanel />
           <CreateGoalPanel />
+          <EditQuestionPanel />
         </View>
       </>
     </DripsyProvider>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -50,4 +52,4 @@ const styles = StyleSheet.create({
     fontWeight: "normal",
     fontFamily: "Helvetica Neue",
   },
-});
+})

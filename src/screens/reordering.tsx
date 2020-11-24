@@ -1,10 +1,12 @@
 import * as React from "react"
-import { StyleSheet, View, Text } from "react-native"
+import { StyleSheet, View, Text, TouchableOpacity } from "react-native"
 import { BlurView } from "expo-blur"
 import IconButton from "@components/icon-button"
 import { send } from "@hooks/useAppState"
 import { Feather } from "@expo/vector-icons"
 import { ScrollView } from "dripsy"
+import DraggableFlatList from "react-native-draggable-flatlist"
+
 // import styles from "./styles"
 
 type Item = {
@@ -26,18 +28,37 @@ export default function Reordering({ items = [] }: { items: Item[] }) {
         <Text style={styles.Title}>Reorder</Text>
         <IconButton icon="x" color="transparent" size={24} onPress={() => {}} />
       </View>
-      <ScrollView style={styles.Scroll}>
-        {items.map((item, i) => (
-          <Item key={item.id} item={item} index={i} />
-        ))}
-      </ScrollView>
+      <DraggableFlatList
+        data={items}
+        keyExtractor={(item) => item.id}
+        onDragEnd={({ data }) =>
+          send(
+            "REORDERED",
+            data.map((d) => d.id)
+          )
+        }
+        renderItem={({ item, index, drag, isActive }) => (
+          <TouchableOpacity onLongPress={drag}>
+            <Item item={item} index={index} isActive={isActive} />
+          </TouchableOpacity>
+        )}
+        style={styles.Scroll}
+      />
     </View>
   )
 }
 
-function Item({ item, index }: { item: Item; index: number }) {
+function Item({
+  item,
+  isActive,
+  index,
+}: {
+  item: Item
+  isActive: boolean
+  index: number
+}) {
   return (
-    <View style={styles.ItemContainer}>
+    <View style={[styles.ItemContainer, isActive ? styles.ItemActive : null]}>
       <View style={styles.ItemHeader}>
         <Text style={styles.ItemTitle}>{item.title}</Text>
         <Feather name="menu" size={18} color="#fff" style={styles.ItemIcon} />
@@ -78,7 +99,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 12,
+    paddingVertical: 16,
     paddingHorizontal: 16,
     justifyContent: "space-between",
     marginBottom: 4,
@@ -89,11 +110,17 @@ const styles = StyleSheet.create({
   ItemIcon: {
     position: "absolute",
     right: 0,
+    alignSelf: "center",
   },
   ItemTitle: {
     color: "#fff",
     textAlign: "center",
     fontSize: 13,
     width: "100%",
+  },
+  ItemActive: {
+    marginHorizontal: 16,
+    transform: [{ scale: 1.03 }],
+    backgroundColor: "#474747",
   },
 })
